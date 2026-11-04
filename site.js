@@ -1,5 +1,13 @@
 const SEED = Math.floor(Math.random() * 4294967296);
 
+const GROUND = [7, 13, 19];
+const INK = [230, 237, 243];
+
+const SWELL = 16;
+const SWAY = 0.02;
+const GLOW = 0.1;
+const STOPS = [0, 0.01, 0.02, 0.04, 0.06, 0.09, 0.13, 0.18, 0.25, 0.35, 0.5, 0.7, 1];
+
 const VIEWS = { "#tools": "tools", "#guidelines": "guidelines" };
 
 const TITLES = {
@@ -11,6 +19,14 @@ const TITLES = {
 const root = document.documentElement;
 const brand = document.querySelector(".brand");
 const backdrop = document.querySelector(".backdrop");
+const context = backdrop.getContext("2d");
+const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+const [walk, weights] = makeWalks();
+const order = [...weights.keys()].sort((a, b) => weights[a] - weights[b]);
+let beam = null;
+let time = 0;
+let lag = 0;
 
 
 function current() {
@@ -29,18 +45,7 @@ function random(seed) {
 }
 
 
-function drawBeam() {
-    const width = backdrop.clientWidth;
-    const height = backdrop.clientHeight;
-    if (width === 0 || height === 0) {
-        return;
-    }
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    backdrop.width = Math.round(width * ratio);
-    backdrop.height = Math.round(height * ratio);
-    const context = backdrop.getContext("2d");
-    context.setTransform(ratio, 0, 0, ratio, 0, 0);
-
+function makeWalks() {
     const next = random(SEED);
     const walk = new Float32Array(9000);
     let drift = 0;
@@ -54,7 +59,17 @@ function drawBeam() {
     for (let path = 0; path < 9; path++) {
         weights.push(0.16 + next() * 0.16);
     }
+    return [walk, weights];
+}
 
+
+function solid(strength) {
+    const channels = GROUND.map((ground, i) => ground + strength * (INK[i] - ground));
+    return "rgb(" + channels.map(Math.round).join(", ") + ")";
+}
+
+
+function traceBeam(width, height) {
     const view = document.querySelector(".view." + current());
     const [from, rise, ink] = view.dataset.beam.split(" ").map(Number);
     const span = 160;
@@ -65,12 +80,16 @@ function drawBeam() {
     const alpha = ink * 26 / strokes;
     const side = Math.min(width, height);
 
-    context.lineWidth = 0.7;
-    for (let path = 0; path < 9; path++) {
+    return order.map((path) => {
         const head = (40 + path * 811) % (walk.length - span - 2);
-        context.strokeStyle = "rgba(230, 237, 243, " + (weights[path] * alpha).toFixed(4) + ")";
+        const tail = weights[path] * alpha;
+        const shade = context.createLinearGradient(0, 0, width * 1.02, 0);
+        for (const stop of STOPS) {
+            const glow = 1 / (1 + (stop / GLOW) ** 2);
+            shade.addColorStop(stop, solid(tail + (1 - tail) * glow));
+        }
+        const lines = new Path2D();
         for (let stroke = 0; stroke < strokes; stroke++) {
-            context.beginPath();
             for (let j = 0; j <= points; j++) {
                 const f = j / points;
                 const position = head + f * span;
@@ -83,14 +102,59 @@ function drawBeam() {
                     + (stroke - middle) / middle * f * f * 0.047 * side
                     + Math.sin(j * 1.7 + stroke) * f * 5;
                 if (j === 0) {
-                    context.moveTo(x, y);
+                    lines.moveTo(x, y);
                 } else {
-                    context.lineTo(x, y);
+                    lines.lineTo(x, y);
                 }
             }
-            context.stroke();
         }
+        return { path, shade, lines };
+    });
+}
+
+
+function drawBeam() {
+    const width = backdrop.clientWidth;
+    const height = backdrop.clientHeight;
+    if (width === 0 || height === 0) {
+        return;
     }
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const across = Math.round(width * ratio);
+    const down = Math.round(height * ratio);
+    if (backdrop.width !== across || backdrop.height !== down) {
+        backdrop.width = across;
+        backdrop.height = down;
+    }
+    const key = [width, height, current()].join(" ");
+    if (beam === null || beam.key !== key) {
+        beam = { key, walks: traceBeam(width, height) };
+    }
+
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    context.clearRect(0, 0, width, height);
+    context.lineWidth = 0.7;
+    const reach = SWAY * Math.min(width, height) / width;
+    for (const { path, shade, lines } of beam.walks) {
+        const tilt = reach * Math.sin(2 * Math.PI * time / SWELL + path);
+        context.setTransform(ratio, ratio * tilt, 0, ratio, 0, 0);
+        context.strokeStyle = shade;
+        context.stroke(lines);
+    }
+}
+
+
+function animate(now) {
+    if (still.matches || lag > 9) {
+        return;
+    }
+    const gap = now - time * 1000;
+    if (gap >= 30) {
+        lag = gap > 50 && gap < 1000 ? lag + 1 : 0;
+        time = now / 1000;
+        drawBeam();
+    }
+    requestAnimationFrame(animate);
 }
 
 
@@ -141,5 +205,7 @@ document.addEventListener("click", (event) => {
 window.addEventListener("popstate", () => show(false));
 window.addEventListener("hashchange", () => show(false));
 new ResizeObserver(drawBeam).observe(backdrop);
+still.addEventListener("change", () => requestAnimationFrame(animate));
 
 show(false);
+requestAnimationFrame(animate);
