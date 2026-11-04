@@ -9,6 +9,8 @@ import urllib.request
 API = "https://api.github.com"
 SITE = "https://atoceano.org/"
 VERSION = re.compile(r'(<span[^>]*data-repo="([^"]+)"[^>]*>)([^<]*)(</span>)')
+DESCRIPTION = re.compile(
+    r'(<span[^>]*data-description="([^"]+)"[^>]*>)(.*?)(</span>)', re.S)
 
 
 def read(url, token=None):
@@ -33,11 +35,21 @@ def shown(page):
     values = {}
     for match in VERSION.finditer(page):
         values["version of " + match.group(2)] = html.unescape(match.group(3)).strip()
+    for match in DESCRIPTION.finditer(page):
+        text = html.unescape(match.group(3))
+        values["description of " + match.group(2)] = " ".join(text.split())
     return values
 
 
 def version(match):
     return match.group(1) + html.escape(versions[match.group(2)], quote=False) + match.group(4)
+
+
+def description(match):
+    text = descriptions.get(match.group(2))
+    if text is None:
+        return match.group(0)
+    return match.group(1) + html.escape(text, quote=False) + match.group(4)
 
 
 token = os.environ["GH_TOKEN"]
@@ -46,7 +58,9 @@ with open("index.html", encoding="utf-8") as source:
 
 names = {match.group(2) for match in VERSION.finditer(page)}
 versions = {name: latest(name, token) for name in names}
-page = VERSION.sub(version, page)
+repos = json.loads(read(API + "/orgs/atOCEANO/repos?per_page=100", token))
+descriptions = {repo["name"]: repo["description"] for repo in repos if repo["description"]}
+page = DESCRIPTION.sub(description, VERSION.sub(version, page))
 
 changed = True
 if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
