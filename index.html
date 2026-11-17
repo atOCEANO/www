@@ -22,6 +22,15 @@
 <body>
     <canvas class="backdrop" aria-hidden="true"></canvas>
 
+    <svg class="sprite" aria-hidden="true">
+        <symbol id="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M17 7l-10 10"/>
+            <path d="M8 7l9 0l0 9"/>
+        </symbol>
+    </svg>
+
     <div class="page">
         <header class="masthead">
             <a class="brand" href="./" aria-current="page">
@@ -30,8 +39,13 @@
             <nav class="nav" aria-label="Site">
                 <a href="#tools">Tools</a>
                 <a href="#guidelines">Guidelines</a>
-                <a href="https://github.com/atOCEANO" target="_blank" rel="noopener">GitHub</a>
-                <a href="mailto:foss@atoceano.org">Contact</a>
+                <span class="split" aria-hidden="true"></span>
+                <a href="https://github.com/atOCEANO" target="_blank" rel="noopener">
+                    GitHub<svg class="icon" aria-hidden="true"><use href="#arrow"/></svg>
+                </a>
+                <a href="mailto:foss@atoceano.org">
+                    Contact<svg class="icon" aria-hidden="true"><use href="#arrow"/></svg>
+                </a>
             </nav>
         </header>
 
