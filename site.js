@@ -8,7 +8,7 @@ const SWAY = 0.02;
 const GLOW = 0.1;
 const STOPS = [0, 0.01, 0.02, 0.04, 0.06, 0.09, 0.13, 0.18, 0.25, 0.35, 0.5, 0.7, 1];
 
-const VIEWS = { "#tools": "tools", "#guidelines": "guidelines" };
+const VIEWS = { "#repositories": "tools", "#guidelines": "guidelines" };
 
 const TITLES = {
     home: "OCE\u039bNO",
