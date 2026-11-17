@@ -299,52 +299,112 @@ a.card:hover .card-name {
     line-height: 1.65;
 }
 
-.catalogue {
-    margin-top: calc(72 * var(--vk));
-}
-
-.row {
+.featured {
     display: grid;
-    grid-template-columns:
-        calc(72 * var(--px)) calc(260 * var(--px)) minmax(0, 1fr) calc(110 * var(--px));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: calc(56 * var(--px));
+    margin-top: calc(64 * var(--vk));
+}
+
+.feature {
+    display: flex;
+    flex-direction: column;
+    gap: calc(14 * var(--px));
+    padding-top: calc(22 * var(--px));
+    border-top: 1px solid var(--rule);
+}
+
+.feature-head {
+    display: flex;
     align-items: center;
-    padding: calc(20 * var(--px)) 0;
-    border-bottom: 1px solid var(--hair);
+    justify-content: space-between;
+    gap: 16px;
 }
 
-a.row:hover {
-    background: var(--wash);
+.feature-name {
+    font-size: calc(40 * var(--px));
+    font-weight: 300;
+    line-height: 1.15;
 }
 
-.row.head {
-    padding: 0 0 calc(12 * var(--px));
-    border-bottom-color: var(--rule);
+.version {
+    padding: 3px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: calc(12 * var(--px));
+    white-space: nowrap;
+}
+
+.version:empty,
+.other-tag:empty {
+    display: none;
+}
+
+.feature-text {
+    max-width: calc(560 * var(--px));
+    color: var(--text);
+    font-size: calc(17 * var(--px));
+    font-weight: 300;
+    line-height: 1.6;
+}
+
+.links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 calc(28 * var(--px));
+    margin-top: calc(4 * var(--px));
+}
+
+.links a,
+.go {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
     color: var(--muted);
     font-family: var(--mono);
-    font-size: calc(11 * var(--px));
-    letter-spacing: 0.16em;
+    font-size: calc(12 * var(--px));
+    letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
-.no,
-.latest {
-    font-family: var(--mono);
-    font-size: calc(13 * var(--px));
+.links a:hover {
+    color: var(--ink);
 }
 
-.no {
+.others {
+    margin-top: calc(64 * var(--vk));
+    border-top: 1px solid var(--hair);
+}
+
+.other {
+    display: grid;
+    grid-template-columns: calc(260 * var(--px)) minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: calc(24 * var(--px));
+    padding: calc(14 * var(--px)) 0;
+    border-bottom: 1px solid var(--hair);
+}
+
+a.other:hover {
+    background: var(--wash);
+}
+
+.other-name {
+    font-family: var(--mono);
+    font-size: calc(14 * var(--px));
+}
+
+.other-tag {
+    margin-left: 12px;
     color: var(--muted);
+    font-size: calc(12 * var(--px));
 }
 
-.repo {
-    font-family: var(--mono);
-    font-size: calc(15 * var(--px));
-}
-
-.what {
-    padding-right: calc(40 * var(--px));
+.other-text {
     color: var(--text);
-    font-size: calc(15 * var(--px));
+    font-size: calc(14 * var(--px));
     font-weight: 300;
     line-height: 1.5;
 }
@@ -456,37 +516,43 @@ a.row:hover {
         font-size: max(12px, calc(15 * var(--px)));
     }
 
-    .row.head {
-        display: none;
+    .featured {
+        grid-template-columns: minmax(0, 1fr);
+        gap: calc(36 * var(--px));
+        margin-top: calc(40 * var(--px));
     }
 
-    .row {
-        grid-template-columns: calc(40 * var(--px)) minmax(0, 1fr) auto;
+    .feature-name {
+        font-size: max(24px, calc(30 * var(--px)));
+    }
+
+    .feature-text {
+        font-size: max(12px, calc(15 * var(--px)));
+    }
+
+    .others {
+        margin-top: calc(40 * var(--px));
+    }
+
+    .other {
+        grid-template-columns: minmax(0, 1fr) auto;
         row-gap: calc(6 * var(--px));
-        align-items: baseline;
-        padding: calc(18 * var(--px)) 0;
+        padding: calc(16 * var(--px)) 0;
     }
 
-    .no {
-        grid-area: 1 / 1;
+    .other .go {
+        grid-row: 1;
+        grid-column: 2;
     }
 
-    .repo {
-        grid-area: 1 / 2;
-    }
-
-    .latest {
-        grid-area: 1 / 3;
+    .other-text {
+        grid-row: 2;
+        grid-column: 1 / -1;
+        font-size: max(12px, calc(13 * var(--px)));
     }
 
     .rule-no {
         font-size: max(10px, calc(11 * var(--px)));
-    }
-
-    .what {
-        grid-area: 2 / 2 / 3 / 4;
-        padding-right: 0;
-        font-size: max(12px, calc(14 * var(--px)));
     }
 
     .rules {
